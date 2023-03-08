@@ -1,0 +1,21 @@
+system:
+  is-cluster: false
+  system-id: 1
+http:
+  port: 8888
+  mode: debug
+zap:
+  level: info
+  format: console
+  prefix: '[db-go-websocket]'
+  showLine: true
+  encode-level: LowercaseColorLevelEncoder
+  stacktrace-key: stacktrace
+  link-name: 'latest_log'
+  log-in-console: true
+etcd:
+  endpoints: info
+grpc:
+  port: 8889
+
+
