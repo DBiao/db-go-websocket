@@ -3,7 +3,6 @@ package router
 import (
 	"db-go-websocket/internal/global"
 	"db-go-websocket/internal/middleware"
-	"db-go-websocket/internal/ws"
 	"fmt"
 	"log"
 	"net/http"
@@ -40,7 +39,7 @@ func newRouter() *gin.Engine {
 	pprof.Register(router)
 
 	// 开启websocket
-	ws.StartWebSocket(router)
+	StartWebSocket(router)
 
 	// 启动http服务
 	global.SERVER = initServer(fmt.Sprintf(":%d", global.CONFIG.Http.Port), router)

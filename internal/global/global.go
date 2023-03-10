@@ -2,6 +2,7 @@ package global
 
 import (
 	config "db-go-websocket/conf"
+	"github.com/Shopify/sarama"
 	"google.golang.org/grpc"
 	"net/http"
 
@@ -15,4 +16,5 @@ var (
 	LOG        *zap.Logger
 	SERVER     *http.Server
 	GRPCSERVER *grpc.Server
+	KAFKA      sarama.Consumer
 )

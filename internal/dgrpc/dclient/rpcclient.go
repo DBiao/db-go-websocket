@@ -84,7 +84,7 @@ func SendRpcBindGroup(addr string, systemId string, groupName string, clientId s
 }
 
 // SendGroupBroadcast 发送分组消息
-func SendGroupBroadcast(systemId string, messageId, sendUserId, groupName string, code int, message string, data *string) {
+func SendGroupBroadcast(messageId, sendUserId, groupName string, code int, message string, data *string) {
 	etcd.GlobalSetting.ServerListLock.Lock()
 	defer etcd.GlobalSetting.ServerListLock.Unlock()
 	for _, addr := range etcd.GlobalSetting.ServerList {
@@ -93,7 +93,6 @@ func SendGroupBroadcast(systemId string, messageId, sendUserId, groupName string
 
 		c := proto.NewCommonServiceClient(conn)
 		_, err := c.Send2Group(context.Background(), &proto.Send2GroupReq{
-			SystemId:   systemId,
 			MessageId:  messageId,
 			SendUserId: sendUserId,
 			GroupName:  groupName,

@@ -59,5 +59,12 @@ func Close() {
 			if global.GRPCSERVER != nil {
 				global.GRPCSERVER.Stop()
 			}
+		},
+
+		// 关闭kafka
+		func() {
+			if global.KAFKA != nil {
+				global.KAFKA.Close()
+			}
 		})
 }
