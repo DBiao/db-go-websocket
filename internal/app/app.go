@@ -2,10 +2,12 @@ package app
 
 import (
 	"context"
+	"db-go-websocket/internal/dgrpc/dclient"
 	"db-go-websocket/internal/dgrpc/dserver"
 	"db-go-websocket/internal/global"
 	"db-go-websocket/internal/router"
 	"db-go-websocket/pkg/etcd"
+	"db-go-websocket/pkg/kafka"
 	"db-go-websocket/pkg/logger"
 	"db-go-websocket/pkg/shutdown"
 	"db-go-websocket/pkg/viper"
@@ -27,6 +29,11 @@ func Start() {
 	// 初始化日志
 	global.LOG = logger.InitZap()
 
+	// 初始化grpc client
+	if global.GRPCClient, err = dclient.InitGrpcClient(""); err != nil {
+		log.Fatal(err)
+	}
+
 	// 初始化grpc服务
 	if err = dserver.InitGrpcServer(); err != nil {
 		log.Fatal(err)
@@ -34,6 +41,11 @@ func Start() {
 
 	// 初始化etcd
 	if err = etcd.InitEtcd(); err != nil {
+		log.Fatal(err)
+	}
+
+	// 初始化kafka
+	if global.KAFKA, err = kafka.InitKafka(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -56,8 +68,8 @@ func Close() {
 
 		// 关闭grpc server
 		func() {
-			if global.GRPCSERVER != nil {
-				global.GRPCSERVER.Stop()
+			if global.GRPCSServer != nil {
+				global.GRPCSServer.Stop()
 			}
 		},
 
@@ -66,5 +78,15 @@ func Close() {
 			if global.KAFKA != nil {
 				global.KAFKA.Close()
 			}
+		},
+
+		// 关闭grpc client
+		func() {
+			global.GRPCClient.Close()
+		},
+
+		// 关闭Kafka
+		func() {
+			global.KAFKA.Close()
 		})
 }

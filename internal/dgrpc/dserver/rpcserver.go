@@ -1,12 +1,21 @@
 package dserver
 
 import (
-	"context"
 	"db-go-websocket/internal/global"
 	"db-go-websocket/internal/proto"
 	"fmt"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/shimingyah/pool"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	"net"
+	"time"
 )
 
 func InitGrpcServer() error {
@@ -17,42 +26,53 @@ func InitGrpcServer() error {
 			return err
 		}
 
-		global.GRPCSERVER = grpc.NewServer()
-		proto.RegisterCommonServiceServer(global.GRPCSERVER, &CommonServiceServer{})
+		global.GRPCSServer = grpc.NewServer(
+			grpc.InitialWindowSize(pool.InitialWindowSize),
+			grpc.InitialConnWindowSize(pool.InitialConnWindowSize),
+			grpc.MaxSendMsgSize(pool.MaxSendMsgSize),
+			grpc.MaxRecvMsgSize(pool.MaxRecvMsgSize),
+			grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+				MinTime:             5 * time.Second, // 如果客户端两次 ping 的间隔小于此值，则关闭连接
+				PermitWithoutStream: true,            // 即使没有 active stream, 也允许 ping
+			}),
 
-		err = global.GRPCSERVER.Serve(lis)
+			// 健康检查
+			grpc.KeepaliveParams(keepalive.ServerParameters{
+				MaxConnectionIdle:     15 * time.Second,      // 如果一个 client 空闲超过该值, 发送一个 GOAWAY, 为了防止同一时间发送大量 GOAWAY, 会在此时间间隔上下浮动 10%, 例如设置为15s，即 15+1.5 或者 15-1.5
+				MaxConnectionAge:      30 * time.Second,      // 如果任意连接存活时间超过该值, 发送一个 GOAWAY
+				MaxConnectionAgeGrace: 5 * time.Second,       // 在强制关闭连接之间, 允许有该值的时间完成 pending 的 rpc 请求
+				Time:                  pool.KeepAliveTime,    // 每隔10秒ping一次客户端
+				Timeout:               pool.KeepAliveTimeout, // 若回包在3s内返回则认为正常，否则连接将被回收
+			}),
+
+			// 流拦截器
+			grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+				grpc_ctxtags.StreamServerInterceptor(),
+				grpc_opentracing.StreamServerInterceptor(),
+				grpc_prometheus.StreamServerInterceptor,
+				grpc_zap.StreamServerInterceptor(global.LOG),
+				grpc_auth.StreamServerInterceptor(AuthInterceptor),
+				grpc_recovery.StreamServerInterceptor(),
+			)),
+
+			// 单元拦截器
+			grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+				grpc_ctxtags.UnaryServerInterceptor(),
+				grpc_opentracing.UnaryServerInterceptor(),
+				grpc_prometheus.UnaryServerInterceptor,
+				grpc_zap.UnaryServerInterceptor(global.LOG),
+				grpc_auth.UnaryServerInterceptor(AuthInterceptor),
+				grpc_recovery.UnaryServerInterceptor(),
+			)),
+		)
+
+		proto.RegisterCommonServiceServer(global.GRPCSServer, &CommonServiceServer{})
+
+		err = global.GRPCSServer.Serve(lis)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-type CommonServiceServer struct{}
-
-func (this *CommonServiceServer) Send2Client(ctx context.Context, req *proto.Send2ClientReq) (*proto.Send2ClientReply, error) {
-	return &proto.Send2ClientReply{}, nil
-}
-
-func (this *CommonServiceServer) CloseClient(ctx context.Context, req *proto.CloseClientReq) (*proto.CloseClientReply, error) {
-	return &proto.CloseClientReply{}, nil
-}
-
-// BindGroup 添加分组到group
-func (this *CommonServiceServer) BindGroup(ctx context.Context, req *proto.BindGroupReq) (*proto.BindGroupReply, error) {
-	return &proto.BindGroupReply{}, nil
-}
-
-func (this *CommonServiceServer) Send2Group(ctx context.Context, req *proto.Send2GroupReq) (*proto.Send2GroupReply, error) {
-	return &proto.Send2GroupReply{}, nil
-}
-
-func (this *CommonServiceServer) Send2System(ctx context.Context, req *proto.Send2SystemReq) (*proto.Send2SystemReply, error) {
-	return &proto.Send2SystemReply{}, nil
-}
-
-// GetGroupClients 获取分组在线用户列表
-func (this *CommonServiceServer) GetGroupClients(ctx context.Context, req *proto.GetGroupClientsReq) (*proto.GetGroupClientsReply, error) {
-	return &proto.GetGroupClientsReply{}, nil
 }
