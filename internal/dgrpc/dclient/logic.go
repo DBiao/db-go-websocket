@@ -11,7 +11,7 @@ import (
 )
 
 func SendRpc2Client(addr string, messageId, sendUserId, clientId string, code int, message string, data *string) {
-	conn := global.POOLS
+	conn := global.GRPCClient
 
 	log.WithFields(log.Fields{
 		"host":     global.CONFIG.Grpc.Port,
@@ -36,7 +36,7 @@ func SendRpc2Client(addr string, messageId, sendUserId, clientId string, code in
 }
 
 func CloseRpcClient(addr string, clientId, systemId string) {
-	conn := global.POOLS
+	conn := global.GRPCClient
 
 	log.WithFields(log.Fields{
 		"host":     global.CONFIG.Grpc.Port,
@@ -57,7 +57,7 @@ func CloseRpcClient(addr string, clientId, systemId string) {
 
 // SendRpcBindGroup 绑定分组
 func SendRpcBindGroup(addr string, systemId string, groupName string, clientId string, userId string, extend string) {
-	conn := global.POOLS
+	conn := global.GRPCClient
 
 	c := proto.NewCommonServiceClient(conn)
 	_, err := c.BindGroup(context.Background(), &proto.BindGroupReq{
@@ -77,7 +77,7 @@ func SendGroupBroadcast(messageId, sendUserId, groupName string, code int, messa
 	etcd.GlobalSetting.ServerListLock.Lock()
 	defer etcd.GlobalSetting.ServerListLock.Unlock()
 	for _, addr := range etcd.GlobalSetting.ServerList {
-		conn := global.POOLS
+		conn := global.GRPCClient
 		fmt.Println(addr)
 		c := proto.NewCommonServiceClient(conn)
 		_, err := c.Send2Group(context.Background(), &proto.Send2GroupReq{
@@ -99,7 +99,7 @@ func SendSystemBroadcast(systemId string, messageId, sendUserId string, code int
 	etcd.GlobalSetting.ServerListLock.Lock()
 	defer etcd.GlobalSetting.ServerListLock.Unlock()
 	for _, addr := range etcd.GlobalSetting.ServerList {
-		conn := global.POOLS
+		conn := global.GRPCClient
 		fmt.Println(addr)
 		c := proto.NewCommonServiceClient(conn)
 		_, err := c.Send2System(context.Background(), &proto.Send2SystemReq{
@@ -128,7 +128,7 @@ func GetOnlineListBroadcast(systemId *string, groupName *string) (clientIdList [
 	wg.Add(serverCount)
 	for _, addr := range etcd.GlobalSetting.ServerList {
 		go func(addr string) {
-			conn := global.POOLS
+			conn := global.GRPCClient
 			fmt.Println(addr)
 			c := proto.NewCommonServiceClient(conn)
 			response, err := c.GetGroupClients(context.Background(), &proto.GetGroupClientsReq{
