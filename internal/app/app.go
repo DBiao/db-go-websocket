@@ -83,10 +83,5 @@ func Close() {
 		// 关闭grpc client
 		func() {
 			global.GRPCClient.Close()
-		},
-
-		// 关闭Kafka
-		func() {
-			global.KAFKA.Close()
 		})
 }
