@@ -73,15 +73,15 @@ func Close() {
 			}
 		},
 
+		// 关闭grpc client
+		func() {
+			global.GRPCClient.Close()
+		},
+
 		// 关闭kafka
 		func() {
 			if global.KAFKA != nil {
 				global.KAFKA.Close()
 			}
-		},
-
-		// 关闭grpc client
-		func() {
-			global.GRPCClient.Close()
 		})
 }
