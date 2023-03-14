@@ -4,7 +4,7 @@ go 1.19
 
 replace github.com/coreos/bbolt v1.3.7 => go.etcd.io/bbolt v1.3.7
 
-replace google.golang.org/grpc => google.golang.org/grpc v1.26.0
+replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
 
 require (
 	github.com/Shopify/sarama v1.38.1
@@ -22,6 +22,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/snowlyg/multi v0.0.42
 	github.com/spf13/viper v1.15.0
+	go.etcd.io/etcd/client/v3 v3.5.6
 	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.52.0
 )
@@ -35,6 +36,7 @@ require (
 	github.com/coreos/bbolt v1.3.7 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
+	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/coreos/pkg v0.0.0-20230209195159-6f3db454fdf8 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
@@ -53,7 +55,6 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -97,6 +98,8 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.9 // indirect
 	github.com/xiang90/probing v0.0.0-20221125231312-a49e3df8f510 // indirect
+	go.etcd.io/etcd/api/v3 v3.5.6 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.5.6 // indirect
 	go.opentelemetry.io/otel v1.10.0 // indirect
 	go.opentelemetry.io/otel/trace v1.10.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect

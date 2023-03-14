@@ -3,8 +3,8 @@ package etcd
 import (
 	"context"
 	"db-go-websocket/internal/global"
-	"github.com/coreos/etcd/clientv3"
 	log "github.com/sirupsen/logrus"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"net"
 	"sync"
 	"time"

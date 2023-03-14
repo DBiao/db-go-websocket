@@ -30,7 +30,7 @@ func Start() {
 	global.LOG = logger.InitZap()
 
 	// 初始化grpc client
-	if global.GRPCClient, err = dclient.InitGrpcClient(""); err != nil {
+	if global.GRPCClient, err = dclient.InitGrpcClient(); err != nil {
 		log.Fatal(err)
 	}
 
