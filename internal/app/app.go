@@ -62,7 +62,7 @@ func Close() {
 			defer cancel()
 
 			if err := global.SERVER.Shutdown(ctx); err != nil {
-				global.LOG.Error("dserver shutdown err", zap.Error(err))
+				global.LOG.Error("http server shutdown err", zap.Error(err))
 			}
 		},
 
@@ -75,7 +75,9 @@ func Close() {
 
 		// 关闭grpc client
 		func() {
-			global.GRPCClient.Close()
+			if global.GRPCClient != nil {
+				global.GRPCClient.Close()
+			}
 		},
 
 		// 关闭kafka
